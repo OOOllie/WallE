@@ -73,7 +73,7 @@ public class HelpCommand extends Command {
 			for (Command command : key.getValue()) {
 				String name = command.getName();
 				//Added so prefix shows before if not general command
-				if (!name.equals("General")) name = key + " " + name;
+				if (!name.equals("General") && !command.getName().equals(key.getKey())) name = key.getKey() + " " + name;
 				sb.append("**").append(prefix).append(command.getName()).append(" ").append(command.getArguments()).append("**  - ").append(command.getDescription()).append("\n");
 			}
 			eo.addField(key.getKey() + " Commands", sb.toString(),false);
