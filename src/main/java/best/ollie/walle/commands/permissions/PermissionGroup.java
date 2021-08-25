@@ -9,12 +9,12 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 public class PermissionGroup extends CommandGroup {
 
 	public PermissionGroup() {
-		super("perms", "(add | remove | list | all)", "Handle the bot permissions for the server", "perms");
+		super("perms", "", "Shows the help menu for the permissions group", "perms");
 	}
 
 	@Override
 	public void run(GuildMessageReceivedEvent event, String[] args) {
-    if (args.length == 0) {
+    if (args.length == 1) {
     	sendHelpMessage(event);
 		}
 	}
