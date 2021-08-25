@@ -79,7 +79,7 @@ public class Bot {
 
     private static void registerCommands() {
         CommandHandler.getInstance().registerCommand(new HelpCommand());
-        CommandHandler.getInstance().registerCommand(new PermissionGroup());
+        CommandHandler.getInstance().registerGroup(new PermissionGroup());
     }
 
     public static String getProperty(String prop) {

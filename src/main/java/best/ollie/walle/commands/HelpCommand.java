@@ -40,7 +40,17 @@ public class HelpCommand extends Command {
 
 		//For every command group command, add them as a list
 		for (CommandGroup commandGroup : groups) {
-			categories.put(commandGroup.getName(), new ArrayList<>(commandGroup.getCommands()));
+			//If the user can access the command group
+			if (CommandHandler.getInstance().hasPerm(event.getMember(), event.getGuild(),commandGroup.getPermission())) {
+				List<Command> accessCommands = new ArrayList<>();
+				//Get a list of all command group commands they can access within that group
+				for (Command command : commandGroup.getCommands()) {
+					if (CommandHandler.getInstance().hasPerm(event.getMember(), event.getGuild(), command.getPermission())) {
+						accessCommands.add(command);
+					}
+				}
+				categories.put(commandGroup.getName(), accessCommands);
+			}
 		}
 
 		//Grab the prefix
