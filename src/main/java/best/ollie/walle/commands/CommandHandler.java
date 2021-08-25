@@ -64,7 +64,6 @@ public class CommandHandler implements EventListener {
             message = message.substring(prefix.length());
 
             for (CommandGroup commandGroup : groups) {
-                System.out.println("Test");
                 if (message.split(" ")[0].equals(commandGroup.getName())) {
                     if (!hasPerm(eventNew.getMember(), eventNew.getGuild(), commandGroup.getPermission())) {
                         eventNew.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
