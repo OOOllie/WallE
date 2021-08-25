@@ -2,7 +2,11 @@ package best.ollie.walle.commands;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
-public abstract class Command { // Abstract so it can't be instantiated, but it has to be extended
+/**
+ * Class for a basic command so we the command handler can grab what it needs
+ * Abstract as is not an actual command to ever be instantiated and ran
+ */
+public abstract class Command {
 
     private final String name;
     private final String arguments;
