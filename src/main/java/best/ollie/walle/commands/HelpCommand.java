@@ -49,7 +49,7 @@ public class HelpCommand extends Command {
 						accessCommands.add(command);
 					}
 				}
-				categories.put(commandGroup.getName(), accessCommands);
+				categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
 			}
 		}
 
