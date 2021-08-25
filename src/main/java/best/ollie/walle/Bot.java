@@ -23,9 +23,9 @@ public class Bot {
     public static JDA bot;
     @Getter
     public final static Driver driver = new Driver();
-    public static Logger logger = LogManager.getLogger(Bot.class);
+    private static Logger logger = LogManager.getLogger(Bot.class);
     @Getter
-    public final static Properties property = new Properties();
+    private final static Properties property = new Properties();
 
     public static void main(String[] args) {
         System.out.println(logger.getLevel());
@@ -78,5 +78,9 @@ public class Bot {
     private static void registerCommands() {
         CommandHandler.getInstance().registerCommand(new HelpCommand());
         CommandHandler.getInstance().registerCommand(new PermissionGroup());
+    }
+
+    public static String getProperty(String prop) {
+        return property.getProperty(prop);
     }
 }
