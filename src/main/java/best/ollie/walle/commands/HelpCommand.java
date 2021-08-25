@@ -49,6 +49,8 @@ public class HelpCommand extends Command {
 						accessCommands.add(command);
 					}
 				}
+				//Make sure default command is added
+				accessCommands.add(commandGroup);
 				categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
 			}
 		}
