@@ -1,6 +1,7 @@
 package best.ollie.walle.commands;
 
 import best.ollie.walle.Bot;
+import best.ollie.walle.exceptions.ResultNotFoundException;
 import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -10,37 +11,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * List all currently available commands
+ */
 public class HelpCommand extends Command {
 	public HelpCommand() {
 		super("help", "", "Shows you the help menu", "help");
 	}
 
+	/**
+	 * @param event The message event to gain access to the channel etc.
+	 * @param args The arguments run with the command
+	 */
 	public void run(GuildMessageReceivedEvent event, String[] args) {
-
+		//Store the list command groups as separate lists
 		HashMap<String, List<Command>> categories = new HashMap<>();
+		//Create a general category for commands without a group
 		categories.put("General", new ArrayList<>());
 		List<Command> commands = CommandHandler.getInstance().getCommands();
 		List<CommandGroup> groups = CommandHandler.getInstance().getGroups();
 
+		//For every command the user has permission for, add it to the general list
 		for (Command command : commands) {
-			if (!CommandHandler.getInstance().hasPerm(event.getMember(), event.getGuild(),command.getPermission())) {
-				continue;
+			if (CommandHandler.getInstance().hasPerm(event.getMember(), event.getGuild(),command.getPermission())) {
+				categories.get("General").add(command);
 			}
-			categories.get("General").add(command);
 		}
 
+		//For every command group command, add them as a list
 		for (CommandGroup commandGroup : groups) {
-			categories.put(commandGroup.getName(), new ArrayList<>());
-			categories.get(commandGroup.getName()).add(commandGroup);
-			for (Command command : commandGroup.getCommands()) {
-				categories.get(commandGroup.getName()).add(command);
-			}
+			categories.put(commandGroup.getName(), new ArrayList<>(commandGroup.getCommands()));
 		}
 
-		String prefix = Bot.driver.getPrefix(event.getGuild().getId());
+		//Grab the prefix
+		String prefix;
+		try {
+			prefix = Bot.driver.getPrefix(event.getGuild().getId());
+		} catch (ResultNotFoundException e) {
+			Bot.logger.error("Failed to get prefix for help command, exiting execution!");
+			return;
+		}
 
+		//Build the message
 		EmbedBuilder eo = Util.getDefEmbedWithFooter();
 
+		//For every category, create a new section inside the embved
 		for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
 			StringBuilder sb = new StringBuilder();
 			for (Command command : key.getValue()) {
@@ -48,7 +63,9 @@ public class HelpCommand extends Command {
 			}
 			eo.addField(key.getKey() + " Commands", sb.toString(),false);
 		}
+		//Set the title
 		eo.setTitle("Help Menu");
+		//Send the message
 		event.getChannel().sendMessageEmbeds(eo.build()).queue();
 	}
 
