@@ -71,6 +71,9 @@ public class HelpCommand extends Command {
 		for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
 			StringBuilder sb = new StringBuilder();
 			for (Command command : key.getValue()) {
+				String name = command.getName();
+				//Added so prefix shows before if not general command
+				if (!name.equals("General")) name = key + " " + name;
 				sb.append("**").append(prefix).append(command.getName()).append(" ").append(command.getArguments()).append("**  - ").append(command.getDescription()).append("\n");
 			}
 			eo.addField(key.getKey() + " Commands", sb.toString(),false);
