@@ -1,5 +1,4 @@
 package best.ollie.walle;
-import best.ollie.walle.commands.Command;
 import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.commands.HelpCommand;
 import best.ollie.walle.commands.permissions.PermissionGroup;
@@ -17,22 +16,25 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 
+/**
+ * Main bot class to load the bot and properties, load the commands events before we can start
+ */
 public class Bot {
 
     @Getter
     public static JDA bot;
     @Getter
     public final static Driver driver = new Driver();
-    private static Logger logger = LogManager.getLogger(Bot.class);
+    public static final Logger logger = LogManager.getLogger(Bot.class);
     @Getter
     private final static Properties property = new Properties();
 
     public static void main(String[] args) {
-        System.out.println(logger.getLevel());
         try {
             //Load the config file
             FileInputStream stream = new FileInputStream("config.txt");
             property.load(stream);
+            //Load the bot from token
             bot = JDABuilder.createDefault(property.getProperty("token")).build();
             bot.awaitReady();
         } catch (FileNotFoundException exception) {
