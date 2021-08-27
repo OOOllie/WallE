@@ -27,7 +27,7 @@ import java.util.Properties;
 public class Bot {
 
     /**
-     * Stores the JDA instace of the bot
+     * Stores the JDA instance of the bot
      */
     @Getter
     public static JDA bot;
@@ -119,6 +119,8 @@ public class Bot {
      * @return The property in the config file
      */
     public static String getProperty(String prop) {
-        return property.getProperty(prop);
+        String content = property.getProperty(prop);
+        if (content == null) return "Please add " + prop + " to the config.txt file";
+        else return content;
     }
 }

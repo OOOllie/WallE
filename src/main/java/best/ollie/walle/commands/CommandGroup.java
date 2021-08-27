@@ -1,7 +1,5 @@
 package best.ollie.walle.commands;
 
-import best.ollie.walle.Bot;
-import best.ollie.walle.exceptions.ResultNotFoundException;
 import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -35,7 +33,7 @@ public abstract class CommandGroup extends Command {
    * @param event The event that was run
    * @param args The arguments it was ran with
    */
-  public abstract void run(GuildMessageReceivedEvent event, String[] args);
+  public abstract void run(GuildMessageReceivedEvent event, String[] args, String prefix);
 
   /**
    * Add a new command to a group
@@ -52,17 +50,9 @@ public abstract class CommandGroup extends Command {
    * Create a help message for that group
    * @param event The event to retain information about
    */
-  public void sendHelpMessage(GuildMessageReceivedEvent event) {
+  public void sendHelpMessage(GuildMessageReceivedEvent event, String prefix) {
     StringBuilder sb = new StringBuilder();
     Guild guild = event.getGuild();
-    String prefix;
-    try {
-      prefix = Bot.driver.getPrefix(guild.getId());
-    } catch (ResultNotFoundException e) {
-      Bot.logger.error("Failed to fetch prefix for: " + guild.getId());
-      e.printStackTrace();
-      return;
-    }
     //Grab the list of commands they have access too
     for (Command command : commands) {
       if (CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {

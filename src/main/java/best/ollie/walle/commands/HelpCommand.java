@@ -15,6 +15,7 @@ import java.util.Map;
  * List all currently available commands
  */
 public class HelpCommand extends Command {
+
 	public HelpCommand() {
 		super("help", "", "Shows you the help menu", "help");
 	}
@@ -23,18 +24,9 @@ public class HelpCommand extends Command {
 	 * @param event The message event to gain access to the channel etc.
 	 * @param args The arguments run with the command
 	 */
-	public void run(GuildMessageReceivedEvent event, String[] args) {
+	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
 		//Store the list command groups as separate lists
 		HashMap<String, List<Command>> categories = CommandHandler.getInstance().getCommandCategories(event.getMember());
-
-		//Grab the prefix
-		String prefix;
-		try {
-			prefix = Bot.driver.getPrefix(event.getGuild().getId());
-		} catch (ResultNotFoundException e) {
-			Bot.logger.error("Failed to get prefix for help command, exiting execution!");
-			return;
-		}
 
 		//Build the message
 		EmbedBuilder eo = Util.getDefEmbedWithFooter();

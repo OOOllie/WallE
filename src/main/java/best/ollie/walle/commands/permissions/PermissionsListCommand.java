@@ -28,7 +28,7 @@ public class PermissionsListCommand extends Command {
 	 * @param args the arguments of the command
 	 */
 	@Override
-	public void run(GuildMessageReceivedEvent event, String[] args) {
+	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
 		//Store the list command groups as separate lists
 		HashMap<String, List<Command>> categories = new HashMap<>();
 		//Create a general category for commands without a group
@@ -40,15 +40,6 @@ public class PermissionsListCommand extends Command {
 				//Make sure default command is added
 				accessCommands.add(commandGroup);
 				categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
-		}
-
-		//Grab the prefix
-		String prefix;
-		try {
-			prefix = Bot.driver.getPrefix(event.getGuild().getId());
-		} catch (ResultNotFoundException e) {
-			Bot.logger.error("Failed to get prefix for help command, exiting execution!");
-			return;
 		}
 
 		//Build the message

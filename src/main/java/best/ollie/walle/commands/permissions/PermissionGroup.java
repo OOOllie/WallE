@@ -21,18 +21,18 @@ public class PermissionGroup extends CommandGroup {
 	}
 
 	@Override
-	public void run(GuildMessageReceivedEvent event, String[] args) {
+	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
 		boolean commandRun = false;
     if (args.length == 0) {
-    	sendHelpMessage(event);
+    	sendHelpMessage(event, prefix);
 		} else {
     	for (Command command : getCommands()) { ;
     		if (command.getName().equals(args[0])) {
     			if (!CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {
-						event.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
+						CommandHandler.getInstance().sendNoPermissionMessage(event.getChannel());
 						return;
 					}
-    			command.run(event, Arrays.copyOfRange(args,1,args.length));
+    			command.run(event, Arrays.copyOfRange(args,1,args.length), prefix);
 				}
 			}
 		}

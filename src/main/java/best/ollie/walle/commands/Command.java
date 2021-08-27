@@ -20,7 +20,7 @@ public abstract class Command {
         this.permission = permission;
     }
 
-    public abstract void run(GuildMessageReceivedEvent event, String[] args);
+    public abstract void run(GuildMessageReceivedEvent event, String[] args, String prefix);
 
     public String getName() {
         return this.name;

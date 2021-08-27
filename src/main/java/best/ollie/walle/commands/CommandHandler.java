@@ -7,7 +7,9 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import org.apache.commons.collections4.list.TreeList;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,7 +111,7 @@ public class CommandHandler implements EventListener {
             if (!Util.canSendMessage(eventNew.getChannel())) { return; }
             Guild guild = eventNew.getGuild();
             Member member = eventNew.getMember();
-            String message = eventNew.getMessage().getContentStripped();
+            String message = eventNew.getMessage().getContentRaw();
             String prefix;
             try {
                 prefix = Bot.driver.getPrefix(guild.getId());
@@ -135,7 +137,7 @@ public class CommandHandler implements EventListener {
                     }
                     //Otherwise remove the command to grab the list of arguments
                     String[] args = getArguments(message, commandGroup.getName());
-                    commandGroup.run(eventNew, args);
+                    commandGroup.run(eventNew, args, prefix);
                     Bot.logger.info("Command '" + commandGroup.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
                     return;
                 }
@@ -149,7 +151,7 @@ public class CommandHandler implements EventListener {
                         return;
                     }
                     String[] args = getArguments(message, command.getName());
-                    command.run(eventNew, args);
+                    command.run(eventNew, args, prefix);
                     Bot.logger.info("Command '" + command.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
                     return;
                 }
@@ -163,8 +165,11 @@ public class CommandHandler implements EventListener {
      * Send the default message that you don't have permission for
      * @param channel The channel to send the message in
      */
-    private void sendNoPermissionMessage(TextChannel channel) {
-        channel.sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
+    public void sendNoPermissionMessage(TextChannel channel) {
+        if (Util.canSendMessage(channel)) {
+            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter(Bot.getProperty("errorColour")).setDescription(
+              Bot.getProperty("no-permission")).build()).queue();
+        }
     }
 
     /**
@@ -239,13 +244,33 @@ public class CommandHandler implements EventListener {
             if (CommandHandler.getInstance().hasPerm(member, commandGroup.getPermission())) {
                 List<Command> accessCommands = getGroupCommands(member, commandGroup);
                 //Make sure default command is added
-                accessCommands.add(commandGroup);
+                accessCommands.add(0, commandGroup);
                 categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
             }
         }
         return categories;
     }
 
+    public void sendCommandUsageMessage(Command command, TextChannel channel, String prefix) {
+        System.out.println();
+        if (Util.canSendMessage(channel)) {
+            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter(Bot.getProperty("errorColour")).appendDescription("Please follow the correct usage `" +
+              prefix + command.getName() + " " + command.getArguments() + "`").build()).queue();
+        }
+    }
 
+    /**
+     * @return the list of all permissions for commands
+     */
+    public List<String> getAllPermissions() {
+        List<String> permissions = new TreeList<>();
+        for (Command command : commands) {
+            permissions.add(command.getPermission());
+        }
+        for (CommandGroup group : groups) {
+            permissions.add(group.getPermission());
+        }
+        return permissions;
+    }
 
 }
