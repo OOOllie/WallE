@@ -22,6 +22,7 @@ public class PermissionGroup extends CommandGroup {
 
 	@Override
 	public void run(GuildMessageReceivedEvent event, String[] args) {
+		boolean commandRun = false;
     if (args.length == 0) {
     	sendHelpMessage(event);
 		} else {

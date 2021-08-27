@@ -1,6 +1,7 @@
 package best.ollie.walle.util;
 
 import best.ollie.walle.exceptions.ResultNotFoundException;
+import net.dv8tion.jda.api.entities.Role;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -440,6 +441,17 @@ public class Driver {
   }
 
   /**
+   * Remove all permissions from a guild
+   * @param roles The list of roles to remove from the database
+   */
+  public void resetPermissions(List<Role> roles) {
+    logger.info("Removing all roles from guild");
+    for (Role role : roles) {
+      removePermRole(role.getId());
+    }
+  }
+
+  /**
    * Remove a permission from a role
    * @param roleID role id to remove it from
    * @param permission the permission to remove
@@ -451,6 +463,39 @@ public class Driver {
       PreparedStatement st = con.prepareStatement(query); // Prepare the statement
       st.setString(1, roleID); // Insert using function to prevent SQL injection
       st.setString(2, permission);
+      st.executeUpdate(); // Execute query
+    } catch (SQLException exc) {
+      logger.error("SQL query failed in database, please contact support");
+      exc.printStackTrace();
+    }
+  }
+
+  /**
+   * Remove all permissions for a role
+   * @param roleID role id to remove it from
+   */
+  public void removePermRole(String roleID) {
+    logger.info("Removing all permissions from: " + roleID);
+    try {
+      String query = "DELETE FROM permissions WHERE roleID = ?";
+      PreparedStatement st = con.prepareStatement(query); // Prepare the statement
+      st.setString(1, roleID); // Insert using function to prevent SQL injection
+      st.executeUpdate(); // Execute query
+    } catch (SQLException exc) {
+      logger.error("SQL query failed in database, please contact support");
+      exc.printStackTrace();
+    }
+  }
+
+  /**
+   * @param guildID guild to remove
+   */
+  public void removeGuild(String guildID) {
+    logger.info("Deleting guild: " + guildID);
+    try {
+      String query = "DELETE FROM guilds WHERE guildID = ?";
+      PreparedStatement st = con.prepareStatement(query); // Prepare the statement
+      st.setString(1, guildID); // Insert using function to prevent SQL injection
       st.executeUpdate(); // Execute query
     } catch (SQLException exc) {
       logger.error("SQL query failed in database, please contact support");

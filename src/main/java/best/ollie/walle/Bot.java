@@ -5,6 +5,8 @@ import best.ollie.walle.commands.HelpCommand;
 import best.ollie.walle.commands.permissions.PermissionGroup;
 import best.ollie.walle.commands.permissions.PermissionsAddCommand;
 import best.ollie.walle.commands.permissions.PermissionsListCommand;
+import best.ollie.walle.events.OnJoinEventListener;
+import best.ollie.walle.events.OnLeaveEventListener;
 import best.ollie.walle.util.Driver;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
@@ -24,11 +26,26 @@ import java.util.Properties;
  */
 public class Bot {
 
+    /**
+     * Stores the JDA instace of the bot
+     */
     @Getter
     public static JDA bot;
+
+    /**
+     * Stores the drive to handle database connections
+     */
     @Getter
     public final static Driver driver = new Driver();
+
+    /**
+     * Store the console logger for the bot
+     */
     public static final Logger logger = LogManager.getLogger(Bot.class);
+
+    /**
+     * Stores the config file property
+     */
     @Getter
     private final static Properties property = new Properties();
 
@@ -76,10 +93,19 @@ public class Bot {
         logger.info("Database connection established.");
     }
 
+    /**
+     * Register the events of the bot
+     * @param bot the bot user
+     */
     private static void registerEvents(JDA bot) {
         bot.addEventListener(new CommandHandler());
+        bot.addEventListener(new OnJoinEventListener());
+        bot.addEventListener(new OnLeaveEventListener());
     }
 
+    /**
+     * Add all the commands for the command handler
+     */
     private static void registerCommands() {
         CommandHandler.getInstance().registerCommand(new HelpCommand());
         PermissionGroup permsGroup = new PermissionGroup();
@@ -88,6 +114,10 @@ public class Bot {
         CommandHandler.getInstance().registerGroup(permsGroup);
     }
 
+    /**
+     * @param prop What to look for in the config file
+     * @return The property in the config file
+     */
     public static String getProperty(String prop) {
         return property.getProperty(prop);
     }
