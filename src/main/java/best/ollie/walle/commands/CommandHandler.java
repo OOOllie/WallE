@@ -3,15 +3,14 @@ package best.ollie.walle.commands;
 import best.ollie.walle.Bot;
 import best.ollie.walle.exceptions.ResultNotFoundException;
 import best.ollie.walle.util.Util;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -131,20 +130,13 @@ public class CommandHandler implements EventListener {
                 if (message.split(" ")[0].equals(commandGroup.getName())) {
                     //If they don't have permission, exit
                     if (!hasPerm(eventNew.getMember(), eventNew.getGuild(), commandGroup.getPermission())) {
-                        eventNew.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
+                        sendNoPermissionMessage(eventNew.getChannel());
                         return;
                     }
                     //Otherwise remove the command to grab the list of arguments
-                    message = message.substring(commandGroup.getName().length()).trim();
-                    String[] args = message.split(" ");
-                    //Run the command group with the arguments
+                    String[] args = getArguments(message, commandGroup.getName());
                     commandGroup.run(eventNew, args);
-                    //Create a string of all arguments
-                    StringBuilder armsg = new StringBuilder();
-                    for (String s : args) {
-                        armsg.append(s);
-                    }
-                    Bot.logger.info("Command '" + commandGroup.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + armsg);
+                    Bot.logger.info("Command '" + commandGroup.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
                     return;
                 }
             }
@@ -153,17 +145,12 @@ public class CommandHandler implements EventListener {
             for (Command command : commands) {
                 if (message.split(" ")[0].equals(command.getName())) {
                     if (!hasPerm(eventNew.getMember(), eventNew.getGuild(), command.getPermission())) {
-                        eventNew.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
+                        sendNoPermissionMessage(eventNew.getChannel());
                         return;
                     }
-                    message = message.substring(command.getName().length()).trim();
-                    String[] args = message.split(" ");
+                    String[] args = getArguments(message, command.getName());
                     command.run(eventNew, args);
-                    StringBuilder armsg = new StringBuilder();
-                    for (String s : args) {
-                        armsg.append(s);
-                    }
-                    Bot.logger.info("Command '" + command.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + armsg);
+                    Bot.logger.info("Command '" + command.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
                     return;
                 }
             }
@@ -171,4 +158,36 @@ public class CommandHandler implements EventListener {
             eventNew.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().appendDescription("**Invalid command!** " + prefix + "help for help.").build());
         }
     }
+
+    /**
+     * Send the default message that you don't have permission for
+     * @param channel The channel to send the message in
+     */
+    private void sendNoPermissionMessage(TextChannel channel) {
+        channel.sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
+    }
+
+    /**
+     * Take a string of arguments and create an array of individual arguments
+     * @param message the message
+     * @param commandName the name of the command
+     * @return the array of arguments
+     */
+    private String[] getArguments(String message, String commandName) {
+        message = message.substring(commandName.length()).trim();
+        return Arrays.stream(message.split(" ")).filter(arg -> arg.length() > 0).toArray(String[]::new);
+    }
+
+    /**
+     * @param arguments the arguments array
+     * @return the list of arguments as a single string
+     */
+    private String getArgumentsLine(String[] arguments) {
+        StringBuilder armsg = new StringBuilder();
+        for (String s : arguments) {
+            armsg.append(s);
+        }
+        return armsg.toString();
+    }
+
 }
