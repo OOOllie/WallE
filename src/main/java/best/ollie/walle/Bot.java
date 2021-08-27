@@ -2,9 +2,7 @@ package best.ollie.walle;
 import best.ollie.walle.commands.Command;
 import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.commands.HelpCommand;
-import best.ollie.walle.commands.permissions.PermissionGroup;
-import best.ollie.walle.commands.permissions.PermissionsAddCommand;
-import best.ollie.walle.commands.permissions.PermissionsListCommand;
+import best.ollie.walle.commands.permissions.*;
 import best.ollie.walle.events.OnJoinEventListener;
 import best.ollie.walle.events.OnLeaveEventListener;
 import best.ollie.walle.util.Driver;
@@ -111,6 +109,8 @@ public class Bot {
         PermissionGroup permsGroup = new PermissionGroup();
         permsGroup.registerCommand(new PermissionsAddCommand());
         permsGroup.registerCommand(new PermissionsListCommand());
+        permsGroup.registerCommand(new PermissionsRemoveCommand());
+        permsGroup.registerCommand(new PermissionsResetCommand());
         CommandHandler.getInstance().registerGroup(permsGroup);
     }
 

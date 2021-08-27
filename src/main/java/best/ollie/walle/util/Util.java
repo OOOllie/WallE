@@ -46,6 +46,7 @@ public class Util {
    */
   public static boolean canSendMessage(TextChannel channel) {
     Member member = channel.getGuild().getMemberById(Bot.bot.getSelfUser().getId());
+    Bot.logger.info("Checking if we can send message in: " + channel.getId());
     return PermissionUtil.checkPermission(channel, member, Permission.MESSAGE_WRITE);
   }
 

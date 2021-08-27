@@ -11,15 +11,15 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import java.util.List;
 
 /**
- * Command to add permission to a role
+ * Command to remove permission from a role
  */
-public class PermissionsAddCommand extends Command {
+public class PermissionsRemoveCommand extends Command {
 
 	/**
 	 * Initiate the command
 	 */
-	public PermissionsAddCommand() {
-		super("add", "(role | permission)","Add a permission to a specific role", "perms.add");
+	public PermissionsRemoveCommand() {
+		super("remove", "(role | permission)","Remove a permission to a specific role", "perms.remove");
 	}
 
 	/**
@@ -53,12 +53,12 @@ public class PermissionsAddCommand extends Command {
 			return;
 		}
 
-		if (permissions.contains(args[1])) {
-			CommandHandler.getInstance().sendMessage(Bot.getProperty("permission-added-already"), Bot.getProperty("errorColour"), event.getChannel());
+		if (!permissions.contains(args[1])) {
+			CommandHandler.getInstance().sendMessage(Bot.getProperty("permission-not-already"), Bot.getProperty("errorColour"), event.getChannel());
 			return;
 		}
 
-		Bot.driver.addPerm(role.getId(), args[1]);
+		Bot.driver.removePerm(role.getId(), args[1]);
 		CommandHandler.getInstance().sendMessage(Bot.getProperty("added-permission"), Bot.getProperty("successColour"), event.getChannel());
 
 	}

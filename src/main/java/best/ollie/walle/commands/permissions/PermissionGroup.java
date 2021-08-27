@@ -33,8 +33,12 @@ public class PermissionGroup extends CommandGroup {
 						return;
 					}
     			command.run(event, Arrays.copyOfRange(args,1,args.length), prefix);
+    			commandRun = true;
 				}
 			}
+		}
+    if (!commandRun) {
+    	CommandHandler.getInstance().sendInvalidCommandMessage(event.getChannel());
 		}
 	}
 }

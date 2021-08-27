@@ -26,26 +26,28 @@ public class HelpCommand extends Command {
 	 */
 	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
 		//Store the list command groups as separate lists
-		HashMap<String, List<Command>> categories = CommandHandler.getInstance().getCommandCategories(event.getMember());
+		if (Util.canSendMessage(event.getChannel())) {
+			HashMap<String, List<Command>> categories = CommandHandler.getInstance().getCommandCategories(event.getMember());
 
-		//Build the message
-		EmbedBuilder eo = Util.getDefEmbedWithFooter();
+			//Build the message
+			EmbedBuilder eo = Util.getDefEmbedWithFooter();
 
-		//For every category, create a new section inside the embved
-		for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
-			StringBuilder sb = new StringBuilder();
-			for (Command command : key.getValue()) {
-				String name = command.getName();
-				//Added so prefix shows before if not general command
-				if (!key.getKey().equals("General") && !command.getName().equalsIgnoreCase(key.getKey())) name = key.getKey().toLowerCase() + " " + name;
-				sb.append("**").append(prefix).append(name).append(" ").append(command.getArguments()).append("**  - ").append(command.getDescription()).append("\n");
+			//For every category, create a new section inside the embved
+			for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
+				StringBuilder sb = new StringBuilder();
+				for (Command command : key.getValue()) {
+					String name = command.getName();
+					//Added so prefix shows before if not general command
+					if (!key.getKey().equals("General") && !command.getName().equalsIgnoreCase(key.getKey())) name = key.getKey().toLowerCase() + " " + name;
+					sb.append("**").append(prefix).append(name).append(" ").append(command.getArguments()).append("**  - ").append(command.getDescription()).append("\n");
+				}
+				eo.addField(key.getKey() + " Commands", sb.toString(),false);
 			}
-			eo.addField(key.getKey() + " Commands", sb.toString(),false);
+			//Set the title
+			eo.setTitle("Help Menu");
+			//Send the message
+			event.getChannel().sendMessageEmbeds(eo.build()).queue();
 		}
-		//Set the title
-		eo.setTitle("Help Menu");
-		//Send the message
-		event.getChannel().sendMessageEmbeds(eo.build()).queue();
 	}
 
 

@@ -7,6 +7,7 @@ import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.exceptions.ResultNotFoundException;
 import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class PermissionsListCommand extends Command {
 
 	public PermissionsListCommand() {
-		super("list", "", "List all current permissions available.", "perms.list");
+		super("list", "[roleId]", "List all current permissions available.", "perms.list");
 	}
 
 	/**
@@ -29,36 +30,70 @@ public class PermissionsListCommand extends Command {
 	 */
 	@Override
 	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
-		//Store the list command groups as separate lists
-		HashMap<String, List<Command>> categories = new HashMap<>();
-		//Create a general category for commands without a group
-		categories.put("General", new ArrayList<>(CommandHandler.getInstance().getCommands()));
+		//Send a list of all permissions
+		if (args.length == 0) {
+			//Store the list command groups as separate lists
+			HashMap<String, List<Command>> categories = new HashMap<>();
+			//Create a general category for commands without a group
+			categories.put("General", new ArrayList<>(CommandHandler.getInstance().getCommands()));
 
-		//For every command group command, add them as a list
-		for (CommandGroup commandGroup : CommandHandler.getInstance().getGroups()) {
+			//For every command group command, add them as a list
+			for (CommandGroup commandGroup : CommandHandler.getInstance().getGroups()) {
 				List<Command> accessCommands = new ArrayList<>(commandGroup.getCommands());
 				//Make sure default command is added
 				accessCommands.add(commandGroup);
-				categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
-		}
-
-		//Build the message
-		EmbedBuilder eo = Util.getDefEmbedWithFooter();
-
-		//For every category, create a new section inside the embved
-		for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
-			StringBuilder sb = new StringBuilder();
-			for (Command command : key.getValue()) {
-				String name = command.getName();
-				//Added so prefix shows before if not general command
-				if (!key.getKey().equals("General") && !command.getName().equalsIgnoreCase(key.getKey())) name = key.getKey().toLowerCase() + " " + name;
-				sb.append("**").append(prefix).append(name).append(" ").append(command.getArguments()).append("**  - ").append(command.getPermission()).append("\n");
+				categories.put(commandGroup.getName().substring(0, 1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
 			}
-			eo.addField(key.getKey() + " Permissions", sb.toString(),false);
+
+			//Build the message
+			EmbedBuilder eo = Util.getDefEmbedWithFooter();
+
+			//For every category, create a new section inside the embved
+			for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
+				StringBuilder sb = new StringBuilder();
+				for (Command command : key.getValue()) {
+					String name = command.getName();
+					//Added so prefix shows before if not general command
+					if (!key.getKey().equals("General") && !command.getName().equalsIgnoreCase(key.getKey()))
+						name = key.getKey().toLowerCase() + " " + name;
+					sb.append("**").append(prefix).append(name).append(" ").append(command.getArguments()).append("**  - ").append(command.getPermission()).append("\n");
+				}
+				eo.addField(key.getKey() + " Permissions", sb.toString(), false);
+			}
+			//Set the title
+			eo.setTitle("Permissions List");
+			//Send the message
+			if (Util.canSendMessage(event.getChannel())) {
+				event.getChannel().sendMessageEmbeds(eo.build()).queue();
+			}
+		} else if (args.length == 1) {
+			Role role = Util.convertStringToRole(args[0], event.getGuild());
+			if (role == null) {
+				CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-role"), Bot.getProperty("errorColour"), event.getChannel());
+				return;
+			}
+			List<String> permissions;
+			try {
+				permissions = Bot.driver.getPerms(role.getId());
+			} catch (ResultNotFoundException exception) {
+				Bot.logger.error("Failed to get permissions for valid role: " + role);
+				return;
+			}
+			if (Util.canSendMessage(event.getChannel())) {
+				EmbedBuilder builder = Util.getDefEmbedWithFooter();
+				builder.setTitle(role.getName() + " Permissions");
+				StringBuilder stringBuilder = new StringBuilder();
+				if (permissions.size() == 0) {
+					stringBuilder.append("No permissions!");
+				} else {
+					for (String permission : permissions) {
+						stringBuilder.append("- " + permission + " \n");
+					}
+				}
+				builder.setDescription(stringBuilder.toString());
+				event.getChannel().sendMessageEmbeds(builder.build()).queue();
+			}
 		}
-		//Set the title
-		eo.setTitle("Permissions List");
-		//Send the message
-		event.getChannel().sendMessageEmbeds(eo.build()).queue();
+
 	}
 }

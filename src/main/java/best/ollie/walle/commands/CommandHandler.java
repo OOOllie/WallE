@@ -43,6 +43,8 @@ public class CommandHandler implements EventListener {
         instance = this;
     }
 
+
+
     /**
      * @return A list of general commands
      */
@@ -108,7 +110,6 @@ public class CommandHandler implements EventListener {
             //Grab the event
             GuildMessageReceivedEvent eventNew = (GuildMessageReceivedEvent) event;
             //If we can't send a message in the channel exit.
-            if (!Util.canSendMessage(eventNew.getChannel())) { return; }
             Guild guild = eventNew.getGuild();
             Member member = eventNew.getMember();
             String message = eventNew.getMessage().getContentRaw();
@@ -157,7 +158,7 @@ public class CommandHandler implements EventListener {
                 }
             }
             //If command was not found, tell them the help message
-            eventNew.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().appendDescription("**Invalid command!** " + prefix + "help for help.").build());
+            sendInvalidCommandMessage(eventNew.getChannel());
         }
     }
 
@@ -167,8 +168,7 @@ public class CommandHandler implements EventListener {
      */
     public void sendNoPermissionMessage(TextChannel channel) {
         if (Util.canSendMessage(channel)) {
-            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter(Bot.getProperty("errorColour")).setDescription(
-              Bot.getProperty("no-permission")).build()).queue();
+            sendMessage(Bot.getProperty("no-permission"), Bot.getProperty("errorColour"), channel);
         }
     }
 
@@ -264,6 +264,8 @@ public class CommandHandler implements EventListener {
      */
     public List<String> getAllPermissions() {
         List<String> permissions = new TreeList<>();
+        //Ensure the wildcard * can be added
+        permissions.add("*");
         for (Command command : commands) {
             permissions.add(command.getPermission());
         }
@@ -271,6 +273,35 @@ public class CommandHandler implements EventListener {
             permissions.add(group.getPermission());
         }
         return permissions;
+    }
+
+    /**
+     * Send a normal message
+     * @param content The content
+     * @param channel The channel
+     */
+    public static void sendMessage(String content, TextChannel channel) {
+        if (Util.canSendMessage(channel)) {
+            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter().appendDescription(content).build()).queue();
+        }
+    }
+
+    /**
+     * Send a normal message but with a colour
+     * @param content The content
+     * @param colour The colour
+     * @param channel The channel
+     */
+    public void sendMessage(String content, String colour, TextChannel channel) {
+        if (Util.canSendMessage(channel)) {
+            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter(colour).appendDescription(content).build()).queue();
+        }
+    }
+
+    public void sendInvalidCommandMessage(TextChannel channel) {
+        if (Util.canSendMessage(channel)) {
+            sendMessage(Bot.getProperty("invalid-command"), Bot.getProperty("errorColour"), channel);
+        }
     }
 
 }

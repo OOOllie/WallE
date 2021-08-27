@@ -53,19 +53,21 @@ public abstract class CommandGroup extends Command {
   public void sendHelpMessage(GuildMessageReceivedEvent event, String prefix) {
     StringBuilder sb = new StringBuilder();
     Guild guild = event.getGuild();
-    //Grab the list of commands they have access too
-    for (Command command : commands) {
-      if (CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {
-        String commandString = "**" + prefix + getName() + " " + command.getName() + " " + command.getArguments() + "**  - " + command.getDescription() + "\n";
-        sb.append(commandString);
+    if (Util.canSendMessage(event.getChannel())) {
+      //Grab the list of commands they have access too
+      for (Command command : commands) {
+        if (CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {
+          String commandString = "**" + prefix + getName() + " " + command.getName() + " " + command.getArguments() + "**  - " + command.getDescription() + "\n";
+          sb.append(commandString);
+        }
       }
+      //Create a message
+      String name = getName();
+      name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
+      EmbedBuilder eo = Util.getDefEmbedWithFooter();
+      eo.addField(name + " Menu",sb.toString(),false);
+      event.getChannel().sendMessageEmbeds(eo.build()).queue();
     }
-    //Create a message
-    String name = getName();
-    name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
-    EmbedBuilder eo = Util.getDefEmbedWithFooter();
-    eo.addField(name + " Menu",sb.toString(),false);
-    event.getChannel().sendMessageEmbeds(eo.build()).queue();
   }
 
 }
