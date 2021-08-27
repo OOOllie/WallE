@@ -4,6 +4,7 @@ import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.commands.HelpCommand;
 import best.ollie.walle.commands.permissions.PermissionGroup;
 import best.ollie.walle.commands.permissions.PermissionsAddCommand;
+import best.ollie.walle.commands.permissions.PermissionsListCommand;
 import best.ollie.walle.util.Driver;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
@@ -83,6 +84,7 @@ public class Bot {
         CommandHandler.getInstance().registerCommand(new HelpCommand());
         PermissionGroup permsGroup = new PermissionGroup();
         permsGroup.registerCommand(new PermissionsAddCommand());
+        permsGroup.registerCommand(new PermissionsListCommand());
         CommandHandler.getInstance().registerGroup(permsGroup);
     }
 

@@ -65,7 +65,7 @@ public abstract class CommandGroup extends Command {
     }
     //Grab the list of commands they have access too
     for (Command command : commands) {
-      if (CommandHandler.getInstance().hasPerm(event.getMember(), guild, command.getPermission())) {
+      if (CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {
         String commandString = "**" + prefix + getName() + " " + command.getName() + " " + command.getArguments() + "**  - " + command.getDescription() + "\n";
         sb.append(commandString);
       }

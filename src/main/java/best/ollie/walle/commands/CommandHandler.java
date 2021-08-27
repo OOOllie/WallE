@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -71,16 +72,14 @@ public class CommandHandler implements EventListener {
 
     /**
      * Check if a user has permission in a guild to run
-     * @param user The user
-     * @param guild The guild
+     * @param member The user
      * @param permission The permission
      * @return true if can be run
      */
-    public boolean hasPerm(Member user, Guild guild, String permission) {
+    public boolean hasPerm(Member member, String permission) {
         //Grab a list of roles the user has and add the everyone role as that is shared with everyone
-        List<Role> roles = new ArrayList<>(user.getRoles());
-        Role everyone = guild.getPublicRole();
-        roles.add(everyone);
+        List<Role> roles = new ArrayList<>(member.getRoles());
+        roles.add(member.getGuild().getPublicRole());
         List<String> permissions = new ArrayList<>();
         //Get all the permissions for each rolke
         for (Role role : roles) {
@@ -91,7 +90,7 @@ public class CommandHandler implements EventListener {
             }
         }
         //Return true if they have the permission or user is an owner
-        if (permissions.contains(permission) || user.isOwner()) {
+        if (permissions.contains(permission) || member.isOwner()) {
             return true;
         } else return permissions.contains("*");
     }
@@ -109,6 +108,7 @@ public class CommandHandler implements EventListener {
             //If we can't send a message in the channel exit.
             if (!Util.canSendMessage(eventNew.getChannel())) { return; }
             Guild guild = eventNew.getGuild();
+            Member member = eventNew.getMember();
             String message = eventNew.getMessage().getContentStripped();
             String prefix;
             try {
@@ -129,7 +129,7 @@ public class CommandHandler implements EventListener {
                 //If it matches a command group
                 if (message.split(" ")[0].equals(commandGroup.getName())) {
                     //If they don't have permission, exit
-                    if (!hasPerm(eventNew.getMember(), eventNew.getGuild(), commandGroup.getPermission())) {
+                    if (!hasPerm(member, commandGroup.getPermission())) {
                         sendNoPermissionMessage(eventNew.getChannel());
                         return;
                     }
@@ -144,7 +144,7 @@ public class CommandHandler implements EventListener {
             //If the message was a general command, repeat the same process above.
             for (Command command : commands) {
                 if (message.split(" ")[0].equals(command.getName())) {
-                    if (!hasPerm(eventNew.getMember(), eventNew.getGuild(), command.getPermission())) {
+                    if (!hasPerm(member, command.getPermission())) {
                         sendNoPermissionMessage(eventNew.getChannel());
                         return;
                     }
@@ -189,5 +189,63 @@ public class CommandHandler implements EventListener {
         }
         return armsg.toString();
     }
+
+    /**
+     * @param member the member to see if they have permission
+     * @return A list of commands in no group that a specific user has access to
+     */
+    public List<Command> getGeneralCommands(Member member) {
+        Bot.logger.info("Getting all commands the user can access not in a group: " + member.getNickname());
+        List<Command> accessCommands = new ArrayList<>();
+        for (Command command : commands) {
+            if (hasPerm(member, command.getPermission())) {
+                accessCommands.add(command);
+            }
+        }
+        return accessCommands;
+    }
+
+    /**
+     * @param member the member to see if they have permission
+     * @return A list of commands in the group that the member can access
+     */
+    public List<Command> getGroupCommands(Member member, CommandGroup group) {
+        Bot.logger.info("Getting commands user: " + member.getNickname() + " can access in: " + group.getName());
+        List<Command> accessCommands = new ArrayList<>();
+        //Get a list of all command group commands they can access within that group
+        for (Command command : group.getCommands()) {
+            if (CommandHandler.getInstance().hasPerm(member, command.getPermission())) {
+                accessCommands.add(command);
+            }
+        }
+        return accessCommands;
+    }
+
+    /**
+     * @param member The member to check for
+     * @return The list of command categories that the member has access to
+     */
+    public HashMap<String,List<Command>> getCommandCategories(Member member) {
+        Bot.logger.info("Getting command categories");
+        HashMap<String, List<Command>> categories = new HashMap<>();
+        //Create a general category for commands without a group
+        categories.put("General", getGeneralCommands(member));
+
+        //For every command the user has permission for, add it to the general list
+
+        //For every command group command, add them as a list
+        for (CommandGroup commandGroup : groups) {
+            //If the user can access the command group
+            if (CommandHandler.getInstance().hasPerm(member, commandGroup.getPermission())) {
+                List<Command> accessCommands = getGroupCommands(member, commandGroup);
+                //Make sure default command is added
+                accessCommands.add(commandGroup);
+                categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
+            }
+        }
+        return categories;
+    }
+
+
 
 }

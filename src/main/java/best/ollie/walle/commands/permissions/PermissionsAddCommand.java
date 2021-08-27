@@ -18,11 +18,11 @@ public class PermissionsAddCommand extends Command {
 
 	/**
 	 * The method body for the command
-	 * @param event The event contianing important data
+	 * @param event The event containing important data
 	 * @param args The arguments ran with the command
 	 */
 	@Override
 	public void run(GuildMessageReceivedEvent event, String[] args) {
-		event.getChannel().sendMessage(Util.getDefEmbedWithFooter().setDescription("This doesn't really do anything, just a quick test").build()).queue();
+		event.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("This doesn't really do anything, just a quick test").build()).queue();
 	}
 }

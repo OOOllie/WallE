@@ -27,7 +27,7 @@ public class PermissionGroup extends CommandGroup {
 		} else {
     	for (Command command : getCommands()) { ;
     		if (command.getName().equals(args[0])) {
-    			if (!CommandHandler.getInstance().hasPerm(event.getMember(), event.getGuild(), command.getPermission())) {
+    			if (!CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {
 						event.getChannel().sendMessageEmbeds(Util.getDefEmbedWithFooter().setDescription("You don't have permission for this command").build()).queue();
 						return;
 					}
