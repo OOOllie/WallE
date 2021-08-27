@@ -3,12 +3,9 @@ package best.ollie.walle.commands.permissions;
 import best.ollie.walle.Bot;
 import best.ollie.walle.commands.Command;
 import best.ollie.walle.commands.CommandHandler;
-import best.ollie.walle.exceptions.ResultNotFoundException;
 import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-
-import java.util.List;
 
 /**
  * Command to reset permissions for a role

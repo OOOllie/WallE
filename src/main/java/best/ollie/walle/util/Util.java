@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 
 import java.awt.*;
-import java.util.Collection;
 
 /**
  * Class to provide some helper functions for the bot
@@ -28,11 +27,11 @@ public class Util {
    * @return A basic embed message with footer
    */
   public static EmbedBuilder getDefEmbedWithFooter() {
-    return new EmbedBuilder().setColor(Color.decode(Bot.getProperty("embedColour"))).setFooter(Bot.getProperty("footerText"));
+    return new EmbedBuilder().setColor(Color.decode(Bot.getProperty("embedColour"))).setFooter(Bot.getProperty("footerText"), Bot.bot.getSelfUser().getAvatarUrl());
   }
 
   public static EmbedBuilder getDefEmbedWithFooter(String colour) {
-    if (colour.matches("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$")) return new EmbedBuilder().setColor(Color.decode(colour)).setFooter(Bot.getProperty("footerText"));
+    if (colour.matches("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$")) return new EmbedBuilder().setColor(Color.decode(colour)).setFooter(Bot.getProperty("footerText"), Bot.bot.getSelfUser().getAvatarUrl());
     else {
       Bot.logger.error("Failed to load a colour provided, please ensure all config options are in the format of #XXXXX");
       return new EmbedBuilder().setFooter(Bot.getProperty("footerText"));

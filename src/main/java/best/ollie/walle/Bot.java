@@ -1,5 +1,5 @@
 package best.ollie.walle;
-import best.ollie.walle.commands.Command;
+
 import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.commands.HelpCommand;
 import best.ollie.walle.commands.permissions.*;

@@ -3,13 +3,9 @@ package best.ollie.walle.commands.permissions;
 import best.ollie.walle.commands.Command;
 import best.ollie.walle.commands.CommandGroup;
 import best.ollie.walle.commands.CommandHandler;
-import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Permission group for all permissions
