@@ -2,6 +2,8 @@ package best.ollie.walle.commands;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
+import java.util.List;
+
 /**
  * Class for a basic command so we the command handler can grab what it needs
  * Abstract as is not an actual command to ever be instantiated and ran
@@ -20,7 +22,7 @@ public abstract class Command {
         this.permission = permission;
     }
 
-    public abstract void run(GuildMessageReceivedEvent event, String[] args, String prefix);
+    public abstract void run(GuildMessageReceivedEvent event, String[] args, String prefix, List<String> permissions);
 
     public String getName() {
         return this.name;

@@ -16,25 +16,4 @@ public class PermissionGroup extends CommandGroup {
 		super("perms", "", "Shows the help menu for the permissions group", "perms");
 	}
 
-	@Override
-	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
-		boolean commandRun = false;
-    if (args.length == 0) {
-    	sendHelpMessage(event, prefix);
-		} else {
-    	for (Command command : getCommands()) { ;
-    		if (command.getName().equals(args[0])) {
-    			if (!CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission())) {
-						CommandHandler.getInstance().sendNoPermissionMessage(event.getChannel());
-						return;
-					}
-    			command.run(event, Arrays.copyOfRange(args,1,args.length), prefix);
-    			commandRun = true;
-				}
-			}
-		}
-    if (!commandRun) {
-    	CommandHandler.getInstance().sendInvalidCommandMessage(event.getChannel());
-		}
-	}
 }

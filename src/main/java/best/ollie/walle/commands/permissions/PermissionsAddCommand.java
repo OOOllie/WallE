@@ -7,6 +7,8 @@ import best.ollie.walle.exceptions.ResultNotFoundException;
 import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -23,12 +25,17 @@ public class PermissionsAddCommand extends Command {
 	}
 
 	/**
+	 * Store the logger object for the command
+	 */
+	private Logger logger = LogManager.getLogger(PermissionsAddCommand.class);
+
+	/**
 	 * The method body for the command
 	 * @param event The event containing important data
 	 * @param args The arguments ran with the command
 	 */
 	@Override
-	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
+	public void run(GuildMessageReceivedEvent event, String[] args, String prefix, List<String> permissions) {
 		if (args.length != 2) {
 			CommandHandler.getInstance().sendCommandUsageMessage(this, event.getChannel(), prefix);
 			return;
@@ -36,30 +43,38 @@ public class PermissionsAddCommand extends Command {
 
 		Role role = Util.convertStringToRole(args[0], event.getGuild());
 		if (role == null) {
-			CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-role"), Bot.getProperty("errorColour"), event.getChannel());
+			CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-role")
+				.replaceAll("\\{prefix}", prefix).replaceAll("\\{role}", args[0])
+				, Bot.getProperty("errorColour"), event.getChannel());
 			return;
 		}
 
-		if (!CommandHandler.getInstance().getAllPermissions().contains(args[1])) {
-			CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-permission"), Bot.getProperty("errorColour"), event.getChannel());
+		if (!Bot.allPerms.contains(args[1])) {
+			CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-permission")
+				.replaceAll("\\{prefix}", prefix).replaceAll("\\{permission}", args[1])
+				, Bot.getProperty("errorColour"), event.getChannel());
 			return;
 		}
 
-		List<String> permissions;
+		List<String> rolePerms;
 		try {
-			permissions = Bot.driver.getPerms(role.getId());
+			rolePerms = Bot.driver.getPerms(role.getId());
 		} catch (ResultNotFoundException exception) {
-			Bot.logger.error("Failed to get permissions for valid role: " + role);
+			logger.error("Failed to get permissions for valid role: " + role);
 			return;
 		}
 
-		if (permissions.contains(args[1])) {
-			CommandHandler.getInstance().sendMessage(Bot.getProperty("permission-added-already"), Bot.getProperty("errorColour"), event.getChannel());
+		if (rolePerms.contains(args[1])) {
+			CommandHandler.getInstance().sendMessage(Bot.getProperty("permission-added-already")
+				.replaceAll("\\{prefix}", prefix).replaceAll("\\{permission}", args[1])
+				, Bot.getProperty("errorColour"), event.getChannel());
 			return;
 		}
 
 		Bot.driver.addPerm(role.getId(), args[1]);
-		CommandHandler.getInstance().sendMessage(Bot.getProperty("added-permission"), Bot.getProperty("successColour"), event.getChannel());
+		CommandHandler.getInstance().sendMessage(Bot.getProperty("added-permission")
+			.replaceAll("\\{prefix}", prefix).replaceAll("\\{permission}", args[1]).replaceAll("\\{role}",role.getAsMention())
+			, Bot.getProperty("successColour"), event.getChannel());
 
 	}
 }

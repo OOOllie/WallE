@@ -1,14 +1,19 @@
 package best.ollie.walle;
 
+import best.ollie.walle.commands.Command;
+import best.ollie.walle.commands.CommandGroup;
 import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.commands.HelpCommand;
 import best.ollie.walle.commands.permissions.*;
+import best.ollie.walle.commands.setup.PrefixCommand;
+import best.ollie.walle.commands.setup.SetupGroup;
 import best.ollie.walle.events.OnJoinEventListener;
 import best.ollie.walle.events.OnLeaveEventListener;
 import best.ollie.walle.util.Driver;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import org.apache.commons.collections4.list.TreeList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -39,13 +45,18 @@ public class Bot {
     /**
      * Store the console logger for the bot
      */
-    public static final Logger logger = LogManager.getLogger(Bot.class);
+    private static final Logger logger = LogManager.getLogger(Bot.class);
 
     /**
      * Stores the config file property
      */
     @Getter
     private final static Properties property = new Properties();
+
+    /**
+     * Stores the list of permissions for all commands
+     */
+    public static List<String> allPerms = new TreeList<>();
 
     public static void main(String[] args) {
         try {
@@ -89,6 +100,18 @@ public class Bot {
             return;
         }
         logger.info("Database connection established.");
+
+        //Initialise the all permissions array
+        allPerms.add("*");
+        for (Command command : CommandHandler.getInstance().getCommands()) {
+            allPerms.add(command.getPermission());
+        }
+        for (CommandGroup group : CommandHandler.getInstance().getGroups()) {
+            allPerms.add(group.getPermission());
+            for (Command command : group.getCommands()) {
+                allPerms.add(command.getPermission());
+            }
+        }
     }
 
     /**
@@ -112,6 +135,9 @@ public class Bot {
         permsGroup.registerCommand(new PermissionsRemoveCommand());
         permsGroup.registerCommand(new PermissionsResetCommand());
         CommandHandler.getInstance().registerGroup(permsGroup);
+        SetupGroup setupGroup = new SetupGroup();
+        setupGroup.registerCommand(new PrefixCommand());
+        CommandHandler.getInstance().registerGroup(setupGroup);
     }
 
     /**

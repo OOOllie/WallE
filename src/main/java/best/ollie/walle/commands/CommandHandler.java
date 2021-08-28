@@ -11,6 +11,8 @@ import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.apache.commons.collections4.list.TreeList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -45,7 +47,10 @@ public class CommandHandler implements EventListener {
         instance = this;
     }
 
-
+    /**
+     * Store the logger object for the class
+     */
+    private Logger logger = LogManager.getLogger(CommandHandler.class);
 
     /**
      * @return A list of general commands
@@ -82,19 +87,7 @@ public class CommandHandler implements EventListener {
      * @param permission The permission
      * @return true if can be run
      */
-    public boolean hasPerm(Member member, String permission) {
-        //Grab a list of roles the user has and add the everyone role as that is shared with everyone
-        List<Role> roles = new ArrayList<>(member.getRoles());
-        roles.add(member.getGuild().getPublicRole());
-        List<String> permissions = new ArrayList<>();
-        //Get all the permissions for each rolke
-        for (Role role : roles) {
-            try {
-                permissions.addAll(Bot.driver.getPerms(role.getId()));
-            } catch (ResultNotFoundException e) {
-                Bot.logger.error("Failed permission check. Look into this");
-            }
-        }
+    public boolean hasPerm(Member member, String permission, List<String> permissions) {
         //Return true if they have the permission or user is an owner
         if (permissions.contains(permission) || member.isOwner()) {
             return true;
@@ -119,7 +112,7 @@ public class CommandHandler implements EventListener {
             try {
                 prefix = Bot.driver.getPrefix(guild.getId());
             } catch (ResultNotFoundException e) {
-                Bot.logger.error("Failed prefix grab for guild: " + guild.getId());
+                logger.error("Failed prefix grab for guild: " + guild.getId());
                 return;
             }
             //If our message wasn't a command exit
@@ -128,49 +121,41 @@ public class CommandHandler implements EventListener {
             }
             //Cut the message down to the right size
             message = message.substring(prefix.length());
-
+            String command = message.split(" ")[0];
+            //Get all the permissions straight away
+            List<String> userPerms = getAllPerms(member);
             //If the message is a command group
             for (CommandGroup commandGroup : groups) {
                 //If it matches a command group
-                if (message.split(" ")[0].equals(commandGroup.getName())) {
+                if (command.equals(commandGroup.getName())) {
                     //If they don't have permission, exit
-                    if (!hasPerm(member, commandGroup.getPermission())) {
-                        sendNoPermissionMessage(eventNew.getChannel());
+                    if (!hasPerm(member, commandGroup.getPermission(), userPerms)) {
+                        sendNoPermissionMessage(eventNew.getChannel(), prefix, commandGroup.getName());
                         return;
                     }
                     //Otherwise remove the command to grab the list of arguments
                     String[] args = getArguments(message, commandGroup.getName());
-                    commandGroup.run(eventNew, args, prefix);
-                    Bot.logger.info("Command '" + commandGroup.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
+                    commandGroup.run(eventNew, args, prefix, userPerms);
+                    logger.info("Command '" + commandGroup.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
                     return;
                 }
             }
 
             //If the message was a general command, repeat the same process above.
-            for (Command command : commands) {
-                if (message.split(" ")[0].equals(command.getName())) {
-                    if (!hasPerm(member, command.getPermission())) {
-                        sendNoPermissionMessage(eventNew.getChannel());
+            for (Command cmd : commands) {
+                if (command.equals(cmd.getName())) {
+                    if (!hasPerm(member, cmd.getPermission(), userPerms)) {
+                        sendNoPermissionMessage(eventNew.getChannel(), prefix, cmd.getName());
                         return;
                     }
-                    String[] args = getArguments(message, command.getName());
-                    command.run(eventNew, args, prefix);
-                    Bot.logger.info("Command '" + command.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
+                    String[] args = getArguments(message, cmd.getName());
+                    cmd.run(eventNew, args, prefix, userPerms);
+                    logger.info("Command '" + cmd.getName() + "' executed by " + eventNew.getAuthor().getName() + " With args: " + getArgumentsLine(args));
                     return;
                 }
             }
             //If command was not found, tell them the help message
-            sendInvalidCommandMessage(eventNew.getChannel());
-        }
-    }
-
-    /**
-     * Send the default message that you don't have permission for
-     * @param channel The channel to send the message in
-     */
-    public void sendNoPermissionMessage(TextChannel channel) {
-        if (Util.canSendMessage(channel)) {
-            sendMessage(Bot.getProperty("no-permission"), Bot.getProperty("errorColour"), channel);
+            sendInvalidCommandMessage(eventNew.getChannel(), prefix, command);
         }
     }
 
@@ -201,11 +186,11 @@ public class CommandHandler implements EventListener {
      * @param member the member to see if they have permission
      * @return A list of commands in no group that a specific user has access to
      */
-    public List<Command> getGeneralCommands(Member member) {
-        Bot.logger.info("Getting all commands the user can access not in a group: " + member.getNickname());
+    public List<Command> getGeneralCommands(Member member, List<String> permissions) {
+        logger.info("Getting all commands the user can access not in a group: " + member.getEffectiveName());
         List<Command> accessCommands = new ArrayList<>();
         for (Command command : commands) {
-            if (hasPerm(member, command.getPermission())) {
+            if (permissions.contains(command.getPermission())) {
                 accessCommands.add(command);
             }
         }
@@ -216,12 +201,12 @@ public class CommandHandler implements EventListener {
      * @param member the member to see if they have permission
      * @return A list of commands in the group that the member can access
      */
-    public List<Command> getGroupCommands(Member member, CommandGroup group) {
-        Bot.logger.info("Getting commands user: " + member.getNickname() + " can access in: " + group.getName());
+    public List<Command> getGroupCommands(Member member, CommandGroup group, List<String> permissions) {
+        logger.info("Getting commands user: " + member.getEffectiveName() + " can access in: " + group.getName());
         List<Command> accessCommands = new ArrayList<>();
         //Get a list of all command group commands they can access within that group
         for (Command command : group.getCommands()) {
-            if (CommandHandler.getInstance().hasPerm(member, command.getPermission())) {
+            if (permissions.contains(command.getPermission())) {
                 accessCommands.add(command);
             }
         }
@@ -233,59 +218,23 @@ public class CommandHandler implements EventListener {
      * @return The list of command categories that the member has access to
      */
     public HashMap<String,List<Command>> getCommandCategories(Member member) {
-        Bot.logger.info("Getting command categories");
+        logger.info("Getting command categories");
         HashMap<String, List<Command>> categories = new HashMap<>();
         //Create a general category for commands without a group
-        categories.put("General", getGeneralCommands(member));
-
-        //For every command the user has permission for, add it to the general list
+        List<String> permissions = getAllPerms(member);
+        categories.put("General", getGeneralCommands(member, permissions));
 
         //For every command group command, add them as a list
         for (CommandGroup commandGroup : groups) {
             //If the user can access the command group
-            if (CommandHandler.getInstance().hasPerm(member, commandGroup.getPermission())) {
-                List<Command> accessCommands = getGroupCommands(member, commandGroup);
+            if (permissions.contains(commandGroup.getPermission())) {
+                List<Command> accessCommands = getGroupCommands(member, commandGroup, permissions);
                 //Make sure default command is added
                 accessCommands.add(0, commandGroup);
                 categories.put(commandGroup.getName().substring(0,1).toUpperCase() + commandGroup.getName().substring(1).toLowerCase(), accessCommands);
             }
         }
         return categories;
-    }
-
-    public void sendCommandUsageMessage(Command command, TextChannel channel, String prefix) {
-        System.out.println();
-        if (Util.canSendMessage(channel)) {
-            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter(Bot.getProperty("errorColour")).appendDescription("Please follow the correct usage `" +
-              prefix + command.getName() + " " + command.getArguments() + "`").build()).queue();
-        }
-    }
-
-    /**
-     * @return the list of all permissions for commands
-     */
-    public List<String> getAllPermissions() {
-        List<String> permissions = new TreeList<>();
-        //Ensure the wildcard * can be added
-        permissions.add("*");
-        for (Command command : commands) {
-            permissions.add(command.getPermission());
-        }
-        for (CommandGroup group : groups) {
-            permissions.add(group.getPermission());
-        }
-        return permissions;
-    }
-
-    /**
-     * Send a normal message
-     * @param content The content
-     * @param channel The channel
-     */
-    public static void sendMessage(String content, TextChannel channel) {
-        if (Util.canSendMessage(channel)) {
-            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter().appendDescription(content).build()).queue();
-        }
     }
 
     /**
@@ -300,10 +249,67 @@ public class CommandHandler implements EventListener {
         }
     }
 
-    public void sendInvalidCommandMessage(TextChannel channel) {
+
+    /**
+     * Send a normal message
+     * @param content The content
+     * @param channel The channel
+     */
+    public void sendMessage(String content, TextChannel channel) {
         if (Util.canSendMessage(channel)) {
-            sendMessage(Bot.getProperty("invalid-command"), Bot.getProperty("errorColour"), channel);
+            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter().appendDescription(content).build()).queue();
         }
+    }
+
+    /**
+     * Send the message when command not found
+     * @param channel channel to send message in
+     */
+    public void sendInvalidCommandMessage(TextChannel channel, String prefix, String command) {
+        if (Util.canSendMessage(channel)) {
+            sendMessage(Bot.getProperty("invalid-command").replaceAll("\\{prefix}",prefix).replaceAll("\\{command}", command)
+              , Bot.getProperty("errorColour"), channel);
+        }
+    }
+
+    public void sendCommandUsageMessage(Command command, TextChannel channel, String prefix) {
+        if (Util.canSendMessage(channel)) {
+            channel.sendMessageEmbeds(Util.getDefEmbedWithFooter(Bot.getProperty("errorColour")).appendDescription("Please follow the correct usage `" +
+              prefix + command.getName() + " " + command.getArguments() + "`").build()).queue();
+        }
+    }
+
+    /**
+     * Send the default message that you don't have permission for
+     * @param channel The channel to send the message in
+     */
+    public void sendNoPermissionMessage(TextChannel channel, String prefix, String command) {
+        if (Util.canSendMessage(channel)) {
+            sendMessage(Bot.getProperty("no-permission").replaceAll("\\{prefix}",prefix).replaceAll("\\{command}", command)
+              , Bot.getProperty("errorColour"), channel);
+        }
+    }
+
+
+    /**
+     * Get a list of permissions a user has
+     * @param member the member
+     * @return the list of permissions
+     */
+    public List<String> getAllPerms(Member member) {
+        if (member.isOwner()) return Bot.allPerms;
+        List<String> permissions = new ArrayList<>();
+        List<Role> roles = new ArrayList<>(member.getRoles());
+        roles.add(member.getGuild().getPublicRole());
+        for (Role role : roles) {
+            try {
+                permissions.addAll(Bot.driver.getPerms(role.getId()));
+                if (permissions.contains("*")) return Bot.allPerms;
+            } catch (ResultNotFoundException e) {
+                logger.error("Failed permission check. Look into this");
+            }
+        }
+        return permissions;
     }
 
 }

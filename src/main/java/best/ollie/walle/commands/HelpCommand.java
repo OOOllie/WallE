@@ -21,7 +21,7 @@ public class HelpCommand extends Command {
 	 * @param event The message event to gain access to the channel etc.
 	 * @param args The arguments run with the command
 	 */
-	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
+	public void run(GuildMessageReceivedEvent event, String[] args, String prefix, List<String> permissions) {
 		//Store the list command groups as separate lists
 		if (Util.canSendMessage(event.getChannel())) {
 			HashMap<String, List<Command>> categories = CommandHandler.getInstance().getCommandCategories(event.getMember());

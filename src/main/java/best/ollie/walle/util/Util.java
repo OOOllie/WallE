@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 
@@ -15,6 +17,11 @@ import java.awt.*;
  * Class to provide some helper functions for the bot
  */
 public class Util {
+
+  /**
+   * Store the logger object
+   */
+  private static Logger logger = LogManager.getLogger(Util.class);
 
   /**
    * @return A basic embed message with no footer
@@ -33,7 +40,7 @@ public class Util {
   public static EmbedBuilder getDefEmbedWithFooter(String colour) {
     if (colour.matches("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$")) return new EmbedBuilder().setColor(Color.decode(colour)).setFooter(Bot.getProperty("footerText"), Bot.bot.getSelfUser().getAvatarUrl());
     else {
-      Bot.logger.error("Failed to load a colour provided, please ensure all config options are in the format of #XXXXX");
+      logger.error("Failed to load a colour provided, please ensure all config options are in the format of #XXXXX");
       return new EmbedBuilder().setFooter(Bot.getProperty("footerText"));
     }
   }
@@ -45,7 +52,7 @@ public class Util {
    */
   public static boolean canSendMessage(TextChannel channel) {
     Member member = channel.getGuild().getMemberById(Bot.bot.getSelfUser().getId());
-    Bot.logger.info("Checking if we can send message in: " + channel.getId());
+    logger.info("Checking if we can send message in: " + channel.getId());
     return PermissionUtil.checkPermission(channel, member, Permission.MESSAGE_WRITE);
   }
 

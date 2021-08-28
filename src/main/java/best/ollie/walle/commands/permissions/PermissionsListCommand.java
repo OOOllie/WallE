@@ -9,6 +9,8 @@ import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,11 @@ import java.util.Map;
  */
 public class PermissionsListCommand extends Command {
 
+	/**
+	 * Store the logger object
+	 */
+	private Logger logger = LogManager.getLogger(PermissionsListCommand.class);
+
 	public PermissionsListCommand() {
 		super("list", "[roleId]", "List all current permissions available.", "perms.list");
 	}
@@ -29,7 +36,7 @@ public class PermissionsListCommand extends Command {
 	 * @param args the arguments of the command
 	 */
 	@Override
-	public void run(GuildMessageReceivedEvent event, String[] args, String prefix) {
+	public void run(GuildMessageReceivedEvent event, String[] args, String prefix, List<String> permissions) {
 		//Send a list of all permissions
 		if (args.length == 0) {
 			//Store the list command groups as separate lists
@@ -69,24 +76,26 @@ public class PermissionsListCommand extends Command {
 		} else if (args.length == 1) {
 			Role role = Util.convertStringToRole(args[0], event.getGuild());
 			if (role == null) {
-				CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-role"), Bot.getProperty("errorColour"), event.getChannel());
+				CommandHandler.getInstance().sendMessage(Bot.getProperty("invalid-role")
+					.replaceAll("\\{prefix}", prefix).replaceAll("\\{role}", args[0])
+					, Bot.getProperty("errorColour"), event.getChannel());
 				return;
 			}
-			List<String> permissions;
+			List<String> rolePerms;
 			try {
-				permissions = Bot.driver.getPerms(role.getId());
+				rolePerms = Bot.driver.getPerms(role.getId());
 			} catch (ResultNotFoundException exception) {
-				Bot.logger.error("Failed to get permissions for valid role: " + role);
+				logger.error("Failed to get permissions for valid role: " + role);
 				return;
 			}
 			if (Util.canSendMessage(event.getChannel())) {
 				EmbedBuilder builder = Util.getDefEmbedWithFooter();
 				builder.setTitle(role.getName() + " Permissions");
 				StringBuilder stringBuilder = new StringBuilder();
-				if (permissions.size() == 0) {
+				if (rolePerms.size() == 0) {
 					stringBuilder.append("No permissions!");
 				} else {
-					for (String permission : permissions) {
+					for (String permission : rolePerms) {
 						stringBuilder.append("- " + permission + " \n");
 					}
 				}

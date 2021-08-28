@@ -176,7 +176,7 @@ public class Driver {
    * @throws ResultNotFoundException thrown if no guild data is found (something bad happened)
    */
   public String getPrefix(String guildID) throws ResultNotFoundException {
-    logger.info("Getting prefix for guildID: " + guildID);
+    //logger.info("Getting prefix for guildID: " + guildID);
     try {
       String getPrefix = "SELECT prefix FROM guilds WHERE guildID=?";
       PreparedStatement st = con.prepareStatement(getPrefix);
