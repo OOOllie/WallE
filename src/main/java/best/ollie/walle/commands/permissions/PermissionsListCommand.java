@@ -25,7 +25,7 @@ public class PermissionsListCommand extends Command {
 	/**
 	 * Store the logger object
 	 */
-	private Logger logger = LogManager.getLogger(PermissionsListCommand.class);
+	private final Logger logger = LogManager.getLogger(PermissionsListCommand.class);
 
 	public PermissionsListCommand() {
 		super("list", "[roleId]", "List all current permissions available.", "perms.list");
@@ -83,7 +83,7 @@ public class PermissionsListCommand extends Command {
 			}
 			List<String> rolePerms;
 			try {
-				rolePerms = Bot.driver.getPerms(role.getId());
+				rolePerms = Bot.getDriver().getPerms(role.getId());
 			} catch (ResultNotFoundException exception) {
 				logger.error("Failed to get permissions for valid role: " + role);
 				return;
@@ -102,6 +102,8 @@ public class PermissionsListCommand extends Command {
 				builder.setDescription(stringBuilder.toString());
 				event.getChannel().sendMessageEmbeds(builder.build()).queue();
 			}
+		} else {
+			CommandHandler.getInstance().sendCommandUsageMessage(this, event.getChannel(), prefix);
 		}
 
 	}

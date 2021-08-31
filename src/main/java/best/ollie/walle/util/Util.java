@@ -21,7 +21,7 @@ public class Util {
   /**
    * Store the logger object
    */
-  private static Logger logger = LogManager.getLogger(Util.class);
+  private static final Logger logger = LogManager.getLogger(Util.class);
 
   /**
    * @return A basic embed message with no footer
@@ -34,14 +34,15 @@ public class Util {
    * @return A basic embed message with footer
    */
   public static EmbedBuilder getDefEmbedWithFooter() {
-    return new EmbedBuilder().setColor(Color.decode(Bot.getProperty("embedColour"))).setFooter(Bot.getProperty("footerText"), Bot.bot.getSelfUser().getAvatarUrl());
+    return new EmbedBuilder().setColor(Color.decode(Bot.getProperty("embedColour"))).setFooter(Bot.getProperty("footerText"), Bot.getBot().getSelfUser().getAvatarUrl());
   }
 
   public static EmbedBuilder getDefEmbedWithFooter(String colour) {
-    if (colour.matches("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$")) return new EmbedBuilder().setColor(Color.decode(colour)).setFooter(Bot.getProperty("footerText"), Bot.bot.getSelfUser().getAvatarUrl());
+    if (colour.matches("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$")) return new EmbedBuilder().setColor(Color.decode(colour))
+      .setFooter(Bot.getProperty("footerText"), Bot.getBot().getSelfUser().getAvatarUrl());
     else {
       logger.error("Failed to load a colour provided, please ensure all config options are in the format of #XXXXX");
-      return new EmbedBuilder().setFooter(Bot.getProperty("footerText"));
+      return new EmbedBuilder().setFooter(Bot.getProperty("footerText"),  Bot.getBot().getSelfUser().getAvatarUrl());
     }
   }
 
@@ -51,7 +52,7 @@ public class Util {
    * @return true if message can be sent, false if cannot
    */
   public static boolean canSendMessage(TextChannel channel) {
-    Member member = channel.getGuild().getMemberById(Bot.bot.getSelfUser().getId());
+    Member member = channel.getGuild().getMemberById(Bot.getBot().getSelfUser().getId());
     logger.info("Checking if we can send message in: " + channel.getId());
     return PermissionUtil.checkPermission(channel, member, Permission.MESSAGE_WRITE);
   }
@@ -80,6 +81,17 @@ public class Util {
       //If they haven't provided a valid integer id (basically it's too large, return nothing
       return null;
     }
+  }
+
+  /**
+   * @param seconds Number of seconds
+   * @return The time string in minutes seconds and hours
+   */
+  public static String convertSecondsToHMmSs(long seconds) {
+    long s = seconds % 60;
+    long m = (seconds / 60) % 60;
+    long h = (seconds / (60 * 60)) % 24;
+    return String.format("%02d:%02d:%02d", h,m,s);
   }
 
 }

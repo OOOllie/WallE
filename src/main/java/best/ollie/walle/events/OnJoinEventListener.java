@@ -14,7 +14,7 @@ public class OnJoinEventListener extends ListenerAdapter {
 	/**
 	 * Store the logger object
 	 */
-	private Logger logger = LogManager.getLogger(OnJoinEventListener.class);
+	private final Logger logger = LogManager.getLogger(OnJoinEventListener.class);
 
 	/**
 	 * Register a guild in the database
@@ -22,7 +22,7 @@ public class OnJoinEventListener extends ListenerAdapter {
 	 */
 	@Override
 	public void onGuildJoin(GuildJoinEvent event) {
-		Bot.driver.setup(event.getGuild().getId());
+		Bot.getDriver().setup(event.getGuild().getId());
 		logger.info("Registering guild: " + event.getGuild().getId());
 	}
 

@@ -41,7 +41,7 @@ public class PermissionsResetCommand extends Command {
 			return;
 		}
 
-		Bot.driver.removePermRole(role.getId());
+		Bot.getDriver().removePermRole(role.getId());
 		CommandHandler.getInstance().sendMessage(Bot.getProperty("reset-permission")
 			.replaceAll("\\{prefix}", prefix).replaceAll("\\{role}", role.getAsMention())
 			, Bot.getProperty("successColour"), event.getChannel());

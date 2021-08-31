@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
-import org.apache.commons.collections4.list.TreeList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +49,7 @@ public class CommandHandler implements EventListener {
     /**
      * Store the logger object for the class
      */
-    private Logger logger = LogManager.getLogger(CommandHandler.class);
+    private final Logger logger = LogManager.getLogger(CommandHandler.class);
 
     /**
      * @return A list of general commands
@@ -110,7 +109,7 @@ public class CommandHandler implements EventListener {
             String message = eventNew.getMessage().getContentRaw();
             String prefix;
             try {
-                prefix = Bot.driver.getPrefix(guild.getId());
+                prefix = Bot.getDriver().getPrefix(guild.getId());
             } catch (ResultNotFoundException e) {
                 logger.error("Failed prefix grab for guild: " + guild.getId());
                 return;
@@ -177,7 +176,7 @@ public class CommandHandler implements EventListener {
     private String getArgumentsLine(String[] arguments) {
         StringBuilder armsg = new StringBuilder();
         for (String s : arguments) {
-            armsg.append(s);
+            armsg.append(s + " ");
         }
         return armsg.toString();
     }
@@ -303,7 +302,7 @@ public class CommandHandler implements EventListener {
         roles.add(member.getGuild().getPublicRole());
         for (Role role : roles) {
             try {
-                permissions.addAll(Bot.driver.getPerms(role.getId()));
+                permissions.addAll(Bot.getDriver().getPerms(role.getId()));
                 if (permissions.contains("*")) return Bot.allPerms;
             } catch (ResultNotFoundException e) {
                 logger.error("Failed permission check. Look into this");

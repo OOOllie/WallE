@@ -2,7 +2,6 @@ package best.ollie.walle.commands;
 
 import best.ollie.walle.util.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -40,14 +39,14 @@ public abstract class CommandGroup extends Command {
       sendHelpMessage(event, prefix, permissions);
       commandRun = true;
     } else {
-      for (Command command : getCommands()) { ;
+      for (Command command : getCommands()) {
         if (command.getName().equals(args[0])) {
           if (!CommandHandler.getInstance().hasPerm(event.getMember(), command.getPermission(), permissions)) {
             CommandHandler.getInstance().sendNoPermissionMessage(event.getChannel(), prefix, getName() + " " + command.getName());
             return;
           }
           commandRun = true;
-          command.run(event, Arrays.copyOfRange(args,1,args.length), prefix, permissions);
+          command.run(event, Arrays.copyOfRange(args,1,args.length), prefix + getName() + " ", permissions);
         }
       }
     }

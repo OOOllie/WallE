@@ -4,13 +4,14 @@ import best.ollie.walle.commands.Command;
 import best.ollie.walle.commands.CommandGroup;
 import best.ollie.walle.commands.CommandHandler;
 import best.ollie.walle.commands.HelpCommand;
+import best.ollie.walle.commands.music.*;
 import best.ollie.walle.commands.permissions.*;
 import best.ollie.walle.commands.setup.PrefixCommand;
 import best.ollie.walle.commands.setup.SetupGroup;
+import best.ollie.walle.events.OnBotDisconnectListener;
 import best.ollie.walle.events.OnJoinEventListener;
 import best.ollie.walle.events.OnLeaveEventListener;
 import best.ollie.walle.util.Driver;
-import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.commons.collections4.list.TreeList;
@@ -33,14 +34,12 @@ public class Bot {
     /**
      * Stores the JDA instance of the bot
      */
-    @Getter
-    public static JDA bot;
+    private static JDA bot;
 
     /**
      * Stores the drive to handle database connections
      */
-    @Getter
-    public final static Driver driver = new Driver();
+    private final static Driver driver = new Driver();
 
     /**
      * Store the console logger for the bot
@@ -50,13 +49,17 @@ public class Bot {
     /**
      * Stores the config file property
      */
-    @Getter
     private final static Properties property = new Properties();
 
     /**
      * Stores the list of permissions for all commands
      */
     public static List<String> allPerms = new TreeList<>();
+
+    /**
+     * Store the MusicManager for the bot
+     */
+    private static final MusicManager manager = new MusicManager();
 
     public static void main(String[] args) {
         try {
@@ -122,6 +125,7 @@ public class Bot {
         bot.addEventListener(new CommandHandler());
         bot.addEventListener(new OnJoinEventListener());
         bot.addEventListener(new OnLeaveEventListener());
+        bot.addEventListener(new OnBotDisconnectListener());
     }
 
     /**
@@ -138,6 +142,16 @@ public class Bot {
         SetupGroup setupGroup = new SetupGroup();
         setupGroup.registerCommand(new PrefixCommand());
         CommandHandler.getInstance().registerGroup(setupGroup);
+        MusicGroup musicGroup = new MusicGroup();
+        musicGroup.registerCommand(new MusicAddCommand());
+        musicGroup.registerCommand(new MusicSkipCommand());
+        musicGroup.registerCommand(new MusicQueueCommand());
+        musicGroup.registerCommand(new MusicStopCommand());
+        musicGroup.registerCommand(new MusicPauseCommand());
+        musicGroup.registerCommand(new MusicVolumeCommand());
+        musicGroup.registerCommand(new MusicPlayCommand());
+        musicGroup.registerCommand(new MusicRemoveCommand());
+        CommandHandler.getInstance().registerGroup(musicGroup);
     }
 
     /**
@@ -148,5 +162,26 @@ public class Bot {
         String content = property.getProperty(prop);
         if (content == null) return "Please add " + prop + " to the config.txt file";
         else return content;
+    }
+
+    /**
+     * @return The discord bot object
+     */
+    public static JDA getBot() {
+        return bot;
+    }
+
+    /**
+     * @return The driver object for database management
+     */
+    public static Driver getDriver() {
+        return driver;
+    }
+
+    /**
+     * @return The music manager object
+     */
+    public static MusicManager getManager() {
+        return manager;
     }
 }

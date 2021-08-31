@@ -20,7 +20,7 @@ public class PermissionsRemoveCommand extends Command {
 	/**
 	 * Store the logger object for the class
 	 */
-	private Logger logger = LogManager.getLogger(PermissionsRemoveCommand.class);
+	private final Logger logger = LogManager.getLogger(PermissionsRemoveCommand.class);
 
 	/**
 	 * Initiate the command
@@ -58,20 +58,20 @@ public class PermissionsRemoveCommand extends Command {
 
 		List<String> rolePerms;
 		try {
-			rolePerms = Bot.driver.getPerms(role.getId());
+			rolePerms = Bot.getDriver().getPerms(role.getId());
 		} catch (ResultNotFoundException exception) {
 			logger.error("Failed to get permissions for valid role: " + role);
 			return;
 		}
 
 		if (!rolePerms.contains(args[1])) {
-			CommandHandler.getInstance().sendMessage(Bot.getProperty("permission-not-already")
+			CommandHandler.getInstance().sendMessage(Bot.getProperty("permission-not-added")
 				.replaceAll("\\{prefix}", prefix).replaceAll("\\{permission}", args[1])
 				, Bot.getProperty("errorColour"), event.getChannel());
 			return;
 		}
 
-		Bot.driver.removePerm(role.getId(), args[1]);
+		Bot.getDriver().removePerm(role.getId(), args[1]);
 		CommandHandler.getInstance().sendMessage(Bot.getProperty("removed-permission")
 			.replaceAll("\\{prefix}", prefix).replaceAll("\\{permission}", args[1]).replaceAll("\\{role}", role.getAsMention())
 			, Bot.getProperty("successColour"), event.getChannel());

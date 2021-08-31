@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ public class OnLeaveEventListener extends ListenerAdapter {
 	/**
 	 * Store the logger object
 	 */
-	private Logger logger = LogManager.getLogger(OnLeaveEventListener.class);
+	private final Logger logger = LogManager.getLogger(OnLeaveEventListener.class);
 
 	/**
 	 * Remove everything from database when we leave
@@ -27,10 +28,10 @@ public class OnLeaveEventListener extends ListenerAdapter {
 	@Override
 	public void onGuildLeave(GuildLeaveEvent event) {
 		Guild guild = event.getGuild();
-		Bot.driver.removeGuild(guild.getId());
-		List<Role> roles = guild.getRoles();
+		Bot.getDriver().removeGuild(guild.getId());
+		List<Role> roles = new ArrayList<>(guild.getRoles());
 		roles.add(guild.getPublicRole());
-		Bot.driver.resetPermissions(roles);
+		Bot.getDriver().resetPermissions(roles);
 		logger.info("Removing guild: " + guild.getId());
 	}
 

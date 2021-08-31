@@ -33,7 +33,7 @@ public class PrefixCommand extends Command {
 			return;
 		}
 
-		Bot.driver.updatePrefix(event.getGuild().getId(), args[0]);
+		Bot.getDriver().updatePrefix(event.getGuild().getId(), args[0]);
 		CommandHandler.getInstance().sendMessage(Bot.getProperty("prefix-updated").replaceAll("\\{prefix}", prefix)
 			.replaceAll("\\{newPrefix}", args[0])
 			, Bot.getProperty("successColour"), event.getChannel());

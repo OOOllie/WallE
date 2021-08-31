@@ -27,7 +27,7 @@ public class PermissionsAddCommand extends Command {
 	/**
 	 * Store the logger object for the command
 	 */
-	private Logger logger = LogManager.getLogger(PermissionsAddCommand.class);
+	private final Logger logger = LogManager.getLogger(PermissionsAddCommand.class);
 
 	/**
 	 * The method body for the command
@@ -58,7 +58,7 @@ public class PermissionsAddCommand extends Command {
 
 		List<String> rolePerms;
 		try {
-			rolePerms = Bot.driver.getPerms(role.getId());
+			rolePerms = Bot.getDriver().getPerms(role.getId());
 		} catch (ResultNotFoundException exception) {
 			logger.error("Failed to get permissions for valid role: " + role);
 			return;
@@ -71,7 +71,7 @@ public class PermissionsAddCommand extends Command {
 			return;
 		}
 
-		Bot.driver.addPerm(role.getId(), args[1]);
+		Bot.getDriver().addPerm(role.getId(), args[1]);
 		CommandHandler.getInstance().sendMessage(Bot.getProperty("added-permission")
 			.replaceAll("\\{prefix}", prefix).replaceAll("\\{permission}", args[1]).replaceAll("\\{role}",role.getAsMention())
 			, Bot.getProperty("successColour"), event.getChannel());
