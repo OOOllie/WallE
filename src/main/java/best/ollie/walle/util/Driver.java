@@ -73,6 +73,10 @@ public class Driver {
     this.password = password;
   }
 
+  /**
+   * Handle initialising tables
+   * @throws SQLException
+   */
   public void initialiseTables() throws SQLException{
     logger.info("Creating tables.");
     String createGuildTable = "CREATE TABLE IF NOT EXISTS`guilds` (" +
@@ -105,6 +109,11 @@ public class Driver {
       statement.execute(createOptionsTable);
       statement.execute(createPollsTable);
       statement.execute(createPermissionsTable);
+  }
+
+  private void handleError(String guildID) {
+    logger.error("Failed to find guild details: " + guildID);
+    setup(guildID);
   }
 
   /**
@@ -220,12 +229,13 @@ public class Driver {
       if (rs.next()) return rs.getString("prefix");
       else {
         logger.error("The guild does not exist in the database");
-        throw new ResultNotFoundException("Guild does not exist in database, contact support: " + guildID);
+        handleError(guildID);
+        return getPrefix(guildID);
       }
-    } catch (Exception exc) {
-      logger.error("Couldn't execute SQL statement: ");
+    } catch (SQLException exc) {
+      logger.error("Couldn't execute SQL statement for guild:" + guildID);
       exc.printStackTrace();
-      throw new ResultNotFoundException("SQL Query failed in database, please contact our support team.");
+      throw new ResultNotFoundException("Failed to get the details from the database.");
     }
   }
 
@@ -245,7 +255,8 @@ public class Driver {
       if (rs.next()) return rs.getString("nsfwRole");
       else {
         logger.error("The guild does not exist in the database");
-        throw new ResultNotFoundException("Guild does not exist in database, contact support: " + guildID);
+        handleError(guildID);
+        return getNSFWRole(guildID);
       }
     } catch (Exception exc) {
       logger.error("Couldn't execute SQL statement: ");
@@ -270,7 +281,8 @@ public class Driver {
       if (rs.next()) return rs.getString("sanctionsRole");
       else {
         logger.error("The guild does not exist in the database");
-        throw new ResultNotFoundException("Guild does not exist in database, contact support: " + guildID);
+        handleError(guildID);
+        return getSuggestionsChannel(guildID);
       }
     } catch (SQLException exc) {
       logger.error("Couldn't execute SQL statement: ");
@@ -295,7 +307,8 @@ public class Driver {
       if (rs.next()) return rs.getString("suggestionsChannel");
       else {
         logger.error("The guild does not exist in the database");
-        throw new ResultNotFoundException("Guild does not exist in database, contact support: " + guildID);
+        handleError(guildID);
+        return getSuggestionsChannel(guildID);
       }
     } catch (Exception exc) {
       logger.error("Couldn't execute SQL statement: ");
