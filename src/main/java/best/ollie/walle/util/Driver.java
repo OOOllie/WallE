@@ -45,6 +45,7 @@ public class Driver {
    */
   public void initialise() throws SQLException{
       con = DriverManager.getConnection(url, username, password);
+      initialiseTables();
   }
 
   /**
@@ -70,6 +71,40 @@ public class Driver {
    */
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public void initialiseTables() throws SQLException{
+    logger.info("Creating tables.");
+    String createGuildTable = "CREATE TABLE IF NOT EXISTS`guilds` (" +
+      "`guildID` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL," +
+      "`nsfwRole` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL," +
+      "`sanctionsRole` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL," +
+      "`suggestionsChannel` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL," +
+      "`prefix` varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL" +
+      ") ENGINE=InnoDB DEFAULT CHARSET=latin1";
+    String createOptionsTable = "CREATE TABLE IF NOT EXISTS `options` (" +
+      " `pollID` int(11) NOT NULL," +
+      " `optionString` varchar(256) COLLATE utf8_unicode_ci NOT NULL" +
+      ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+    String createPollsTable = "CREATE TABLE IF NOT EXISTS `polls` (" +
+      " `pollID` int(11) NOT NULL AUTO_INCREMENT," +
+      " `guildID` varchar(20) COLLATE utf8_unicode_ci NOT NULL," +
+      " `title` varchar(256) COLLATE utf8_unicode_ci NOT NULL," +
+      " `channelID` varchar(20) COLLATE utf8_unicode_ci NOT NULL," +
+      " `time` int(11) NOT NULL," +
+      " `messageID` varchar(20) COLLATE utf8_unicode_ci NOT NULL," +
+      " PRIMARY KEY (`pollID`)" +
+      ") ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+    String createPermissionsTable = "CREATE TABLE IF NOT EXISTS `permissions` (" +
+      " `roleID` varchar(20) COLLATE utf8_unicode_ci NOT NULL," +
+      " `permission` varchar(256) COLLATE utf8_unicode_ci NOT NULL" +
+      ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+      PreparedStatement statement = con.prepareStatement(createGuildTable);
+      statement.execute();
+      statement.execute(createOptionsTable);
+      statement.execute(createPollsTable);
+      statement.execute(createPermissionsTable);
   }
 
   /**
