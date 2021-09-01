@@ -59,11 +59,8 @@ public class PermissionsListCommand extends Command {
 			for (Map.Entry<String, List<Command>> key : categories.entrySet()) {
 				StringBuilder sb = new StringBuilder();
 				for (Command command : key.getValue()) {
-					String name = command.getName();
-					//Added so prefix shows before if not general command
-					if (!key.getKey().equals("General") && !command.getName().equalsIgnoreCase(key.getKey()))
-						name = key.getKey().toLowerCase() + " " + name;
-					sb.append("**").append(prefix).append(name).append(" ").append(command.getArguments()).append("**  - ").append(command.getPermission()).append("\n");
+					sb.append("**").append(prefix).append(command.getName()).append(" ").append(command.getArguments()).append("**  - ")
+						.append(command.getPermission()).append("\n");
 				}
 				eo.addField(key.getKey() + " Permissions", sb.toString(), false);
 			}

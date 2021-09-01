@@ -114,8 +114,14 @@ public class CommandHandler implements EventListener {
                 logger.error("Failed prefix grab for guild: " + guild.getId());
                 return;
             }
-            //If our message wasn't a command exit
+
+            //If our message wasn't a command exit or if it was a ping instead of command, send the ping message
             if (!message.startsWith(prefix)) {
+                if (eventNew.getMessage().getMentionedUsers().contains(Bot.getBot().getSelfUser())) {
+                    CommandHandler.getInstance().sendMessage(Bot.getProperty("mentioned-bot")
+                        .replaceAll("\\{prefix}", prefix)
+                      , Bot.getProperty("successColour"), eventNew.getChannel());
+                }
                 return;
             }
             //Cut the message down to the right size
@@ -153,6 +159,7 @@ public class CommandHandler implements EventListener {
                     return;
                 }
             }
+
             //If command was not found, tell them the help message
             sendInvalidCommandMessage(eventNew.getChannel(), prefix, command);
         }
